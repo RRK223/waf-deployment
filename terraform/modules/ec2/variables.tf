@@ -1,20 +1,9 @@
-variable "aws_region" {
-  description = "AWS region to deploy resources"
-  type        = string
-  default     = "us-east-1"
-}
-
 variable "environment" {
   description = "Environment name"
   type        = string
   default     = "prod-sonarqube"
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
-}
 
 variable "tags" {
   description = "Common resource tags"
@@ -26,12 +15,19 @@ variable "tags" {
   }
 }
 
-variable "ssh_allowed_cidr" {
-  description = "CIDR block allowed to SSH into EC2"
+
+variable "subnet_id" {
+  description = "Subnet ID where EC2 instance will be launched"
   type        = string
 }
 
+
+variable "sg_id" {
+  type = string
+  description = "Security Group ID where the web server will be deployed"
+}
+
 variable "key_name" {
-  description = "EC2 key pair name"
   type        = string
+  description = "EC2 key pair name"
 }

@@ -1,3 +1,8 @@
+# variable "vpc_name" {
+#   type        = string
+#   description = "VPC Name"
+# }
+
 variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string
@@ -24,14 +29,4 @@ variable "tags" {
     Environment = "prod-sonarqube"
     ManagedBy   = "terraform"
   }
-}
-
-variable "ssh_allowed_cidr" {
-  description = "CIDR block allowed to SSH into EC2"
-  type        = string
-}
-
-variable "key_name" {
-  description = "EC2 key pair name"
-  type        = string
 }

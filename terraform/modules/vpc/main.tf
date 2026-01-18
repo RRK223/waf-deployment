@@ -1,128 +1,68 @@
-#custom vpc
-resource "aws_vpc" "this" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+resource "aws_vpc" "vpc" {
+  cidr_block           = var.vpc_cidr_block
+  enable_dns_hostnames = var.enable_dns_hostnames
+  enable_dns_support   = var.enable_dns_support
 
-  tags = merge(
-    var.tags,
-    { Name = "${var.environment}-vpc" }
-  )
-}
-
-
-#az
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-#public subnets
-resource "aws_subnet" "public" {
-  count                   = 2
-  vpc_id                  = aws_vpc.this.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 2, count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.environment}-public-${count.index}"
-      Tier = "public"
-    }
-  )
-}
-
-#private subnets
-resource "aws_subnet" "private" {
-  count             = 2
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 2, count.index + 2)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.environment}-private-${count.index}"
-      Tier = "private"
-    }
-  )
-}
-
-#internet gateway
-resource "aws_internet_gateway" "this" {
-  vpc_id = aws_vpc.this.id
-
-  tags = merge(
-    var.tags,
-    { Name = "${var.environment}-igw" }
-  )
-}
-
-# Dont need jastai cha
-#nat gateway
-# resource "aws_eip" "nat" {
-#   domain = "vpc"
-
-#   tags = merge(
-#     var.tags,
-#     { Name = "${var.environment}-nat-eip" }
-#   )
-# }
-
-# Dont need jastai cha
-# resource "aws_nat_gateway" "this" {
-#   allocation_id = aws_eip.nat.id
-#   subnet_id     = aws_subnet.public[0].id
-
-#   tags = merge(
-#     var.tags,
-#     { Name = "${var.environment}-nat" }
-#   )
-# }
-
-#route (public)
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.this.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.this.id
+  tags = {
+    Name = var.vpc_name
   }
 
-  tags = merge(
-    var.tags,
-    { Name = "${var.environment}-public-rt" }
-  )
+  lifecycle {
+    precondition {
+      condition     = local.valid_public_subnets && local.valid_private_subnets
+      error_message = <<EOT
+                      Invalid subnet configuration:
+
+                      - number_of_az              = ${var.number_of_az}
+                      - number_of_public_subnets  must be between 0 and ${local.max_public_subnets}
+                      - number_of_private_subnets must be between 0 and ${local.max_private_subnets}
+
+                      Rule:
+                      - Public  subnets ≤ AZs
+                      - Private subnets ≤ 2 × AZs
+                    EOT
+    }
+
+    precondition {
+      condition     = length(var.public_subnets_cidr_block) == var.number_of_public_subnets && length(var.private_subnets_cidr_block) == var.number_of_private_subnets
+      error_message = "Subnet CIDR count must match subnet count variables."
+    }
+  }
 }
 
-resource "aws_route_table_association" "public" {
-  count          = 2
-  subnet_id      = aws_subnet.public[count.index].id
-  route_table_id = aws_route_table.public.id
+
+resource "aws_internet_gateway" "internet_gateway" {
+  vpc_id = aws_vpc.vpc.id
+  count = var.number_of_public_subnets == 0 ? 0 : 1
+
+  tags = {
+    Name = "${var.vpc_name}-igw"
+  }
 }
 
 
-# Dont need jastai cha
-#private
-# resource "aws_route_table" "private" {
-#   vpc_id = aws_vpc.this.id
+module "public_subnets" {
+  source = "./vpc_sub_modules/subnet"
 
-#   route {
-#     cidr_block     = "0.0.0.0/0"
-#     nat_gateway_id = aws_nat_gateway.this.id
-#   }
+  vpc_name          = var.vpc_name
+  vpc_id            = aws_vpc.vpc.id
+  subnet_cidr_block = var.public_subnets_cidr_block
+  subnet_az         = var.vpc_azs
+  number_of_az      = var.number_of_az
+  number_of_subnets = var.number_of_public_subnets
+  subnet_type       = "public"
+  gateway_id        = var.number_of_public_subnets > 0 ?  aws_internet_gateway.internet_gateway[0].id : null
+}
 
-#   tags = merge(
-#     var.tags,
-#     { Name = "${var.environment}-private-rt" }
-#   )
-# }
+module "private_subnets" {
+  source = "./vpc_sub_modules/subnet"
 
+  vpc_name          = var.vpc_name
+  vpc_id            = aws_vpc.vpc.id
+  subnet_cidr_block = var.private_subnets_cidr_block
+  subnet_az         = var.vpc_azs
+  number_of_az      = var.number_of_az
+  number_of_subnets = var.number_of_private_subnets
+  subnet_type       = "private"
+}
 
-# Dont need jastai cha
-# resource "aws_route_table_association" "private" {
-#   count          = 2
-#   subnet_id      = aws_subnet.private[count.index].id
-#   route_table_id = aws_route_table.private.id
-# }

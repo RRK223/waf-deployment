@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "./modules/vpc"
+  source = "../../modules/vpc"
   # vpc
   vpc_name       = var.environment
   vpc_cidr_block = var.vpc_cidr
@@ -18,7 +18,7 @@ module "vpc" {
 }
 
 module "sg" {
-  source = "./modules/sg"
+  source = "../../modules/sg"
 
   environment      = var.environment
   vpc_id           = module.vpc.vpc_id
@@ -27,7 +27,7 @@ module "sg" {
 }
 
 module "ec2" {
-  source = "./modules/ec2"
+  source = "../../modules/ec2"
 
   key_name  = var.key_name
   subnet_id = module.vpc.public_subnets[0].id

@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       working_directory:
-        description: "Terraform working directory (dev | stage | prod)"
+        description: "Terraform working directory (sonarqube | prometheus | prod)"
         required: true
         type: choice
         options:
-          - dev
-          - stage
+          - sonarqube
+          - prometheus
           - prod
 
 jobs:

@@ -7,14 +7,6 @@ on:
        description: "Terraform working directory"
        required: true
 
-      aws_access_key:
-        description: "AWS Access Key"
-        required: true
-
-      aws_secret_key:
-        description: "AWS Secret Key"
-        required: true
-
       aws_region:
         description: "AWS Region"
         required: true

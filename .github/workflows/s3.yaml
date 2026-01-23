@@ -1,0 +1,31 @@
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_REGION: us-east-1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init
+        working-directory: ./terraform/bootstrap/s3
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ./terraform/bootstrap/s3
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ./terraform/bootstrap/s3
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: ./terraform/bootstrap/s3
+        run: terraform apply -auto-approve

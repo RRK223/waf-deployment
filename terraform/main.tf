@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "tf_state" {
-  bucket = "adex-terraform-states-248628534734u56"
+  bucket = "adex-terraform-248628534734u568934547435"
 }
 
 resource "aws_s3_bucket_versioning" "tf_state" {
@@ -22,3 +22,4 @@ resource "aws_s3_bucket_public_access_block" "tf_state" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+

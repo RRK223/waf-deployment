@@ -54,6 +54,19 @@ Resources:
             Action:
               - s3:*
             Resource: "*"
+            
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource: "*"
+
+          - Effect: Allow
+            Action:
+              - route53:ListHostedZones
+              - route53:GetHostedZone
+              - route53:ListResourceRecordSets
+              - route53:ChangeResourceRecordSets
+            Resource: "*"
 
           - Effect: Allow
             Action:

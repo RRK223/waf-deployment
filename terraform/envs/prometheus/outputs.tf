@@ -3,16 +3,16 @@
 ############################
 
 output "vpc_id" {
-  value = module.vpc.vpc_id
+  value = data.terraform_remote_state.sonarqube.outputs.vpc_id
 }
 
 output "public_subnet_ids" {
-  value = module.vpc.public_subnet_ids
+  value = data.terraform_remote_state.sonarqube.outputs.public_subnet_ids[0]
 }
 
 
 output "private_subnet_ids" {
-  value = module.vpc.private_subnet_ids
+  value = data.terraform_remote_state.sonarqube.outputs.private_subnet_ids[0]
 }
 
 ############################

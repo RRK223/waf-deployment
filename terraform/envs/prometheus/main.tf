@@ -1,9 +1,33 @@
 module "sg" {
-  source = "../../modules/sg"
+  source      = "./modules/sg"
+  name        = "${var.environment}-sg"
+  description = "Allow http and https"
+  vpc_id      = module.vpc.vpc_id
+  tags = var.tags
 
-  environment      = var.environment
-  vpc_id      = data.terraform_remote_state.sonarqube.outputs.vpc_id
-  tags             = var.tags
+  ingress_rules = [
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+
+  egress_rules = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
 }
 
 module "ec2" {
